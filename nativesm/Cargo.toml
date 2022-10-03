@@ -1,0 +1,73 @@
+[package]
+name = "nativesm"
+version = "0.1.0"
+edition = "2021"
+build = "./build_src/main.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+async = []
+wgpu = []
+
+[dependencies]
+
+# Logging facade
+log = "^ 0.4"
+simple_logger = "^ 2.3"
+
+# Math library
+cgmath = "^ 0.18"
+
+# Lazy init static variables at runtime
+lazy_static = "^ 1.4"
+
+# GPU compute 
+wgpu = { version = "0.13.0", features = ["spirv"] }
+
+# Futures lib
+futures = "^ 0.3"
+
+# Byte manipulation
+bytemuck = { version = "^ 1.12", features = ["derive"] }
+
+# Preview windowing
+winit = "^ 0.27"
+
+# Small local async runtime
+# [target.'cfg(target_feature="async")'.dependencies]
+scoped_threadpool = "^ 0.1"
+
+# JNI and NDK dependencies
+[target.'cfg(target_os="android")'.dependencies]
+jni = "^ 0.19"
+android_log = "^ 0.1"
+ndk = { version = "^ 0.7", features = ["bitmap"] }
+
+# Shader compiling as build script
+[build-dependencies]
+shaderc  = "^ 0.8"
+
+# Release profile configuration
+[profile.release]
+opt-level = "z"   # Min size
+panic = "abort"   # We wont see them in android anyway
+strip = true
+lto = true
+codegen-units = 1 # With less codegen-units better size optimization can be performed
+
+[profile.dev.package."*"]
+inherits = "release"
+
+[profile.release.package."*"]
+inherits = "release"
+
+[[bin]]
+path = "./src/preview.rs"
+name = "preview"
+required-features = ["wgpu"]
+
+[lib]
+path = "./src/lib.rs"
+name = "nativesm"
+crate_type = ["cdylib", "rlib"]
